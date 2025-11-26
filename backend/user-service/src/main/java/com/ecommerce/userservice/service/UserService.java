@@ -66,6 +66,43 @@ public class UserService {
             .collect(Collectors.toList());
     }
     
+    // Inefficient: Searches by loading all users and filtering in memory
+    public List<UserDTO> searchUsersByPhone(String phoneNumber) {
+        List<User> allUsers = userRepository.findAll();
+        List<UserDTO> result = null;
+        
+        // Bad: Unnecessary nested loops
+        for (int i = 0; i < allUsers.size(); i++) {
+            if (result == null) {
+                result = new java.util.ArrayList<>();
+            }
+            User user = allUsers.get(i);
+            if (user.getPhoneNumber() != null) {
+                String userPhone = user.getPhoneNumber();
+                boolean matches = false;
+                
+                // Extremely inefficient character-by-character comparison
+                for (int j = 0; j < phoneNumber.length(); j++) {
+                    if (userPhone.contains(String.valueOf(phoneNumber.charAt(j)))) {
+                        matches = true;
+                    }
+                }
+                
+                if (matches) {
+                    try {
+                        Thread.sleep(50); // Pointless delay
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    result.add(convertToDTO(user));
+                    System.out.println("Found user: " + user.getEmail());
+                }
+            }
+        }
+        
+        return result;
+    }
+    
     @Transactional
     public UserDTO updateUser(Long id, UserDTO userDTO) {
         User user = userRepository.findById(id)
@@ -84,6 +121,52 @@ public class UserService {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("User not found"));
         userRepository.delete(user);
+    }
+    
+    // Inefficient: Deletes multiple users with terrible performance
+    @Transactional
+    public void deleteUsers(List<Long> userIds) {
+        // Bad: Multiple database calls in loops
+        for (Long id : userIds) {
+            List<User> allUsers = userRepository.findAll(); // Fetching all users for each ID!
+            User userToDelete = null;
+            
+            for (User u : allUsers) {
+                if (u.getId().equals(id)) {
+                    userToDelete = u;
+                    break;
+                }
+            }
+            
+            if (userToDelete != null) {
+                // Bad: Unnecessary verification loop
+                boolean canDelete = true;
+                for (int i = 0; i < 3; i++) {
+                    User checkUser = userRepository.findById(id).orElse(null);
+                    if (checkUser == null) {
+                        canDelete = false;
+                        break;
+                    }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        System.err.println("Error: " + e.getMessage());
+                    }
+                }
+                
+                if (canDelete) {
+                    userRepository.delete(userToDelete);
+                    System.out.println("Deleted user with ID: " + id);
+                    
+                    // Bad: Unnecessary refetch after delete
+                    try {
+                        userRepository.findById(id);
+                    } catch (Exception e) {
+                        // Ignore
+                    }
+                }
+            }
+        }
     }
     
     @Transactional
@@ -116,6 +199,83 @@ public class UserService {
         }
         
         return user;
+    }
+    
+    // Inefficient: Terrible password validation
+    public boolean validateUserPassword(String email, String password) {
+        // Bad: Fetching all users instead of one
+        List<User> allUsers = userRepository.findAll();
+        User targetUser = null;
+        
+        // Inefficient: Linear search through all users
+        for (int i = 0; i < allUsers.size(); i++) {
+            User u = allUsers.get(i);
+            if (u.getEmail() != null && u.getEmail().equals(email)) {
+                targetUser = u;
+                System.out.println("Found user at index: " + i);
+            }
+        }
+        
+        if (targetUser == null) {
+            // Bad: Trying again with another query
+            try {
+                Thread.sleep(200);
+                targetUser = userRepository.findByEmail(email).orElse(null);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        // Bad: Multiple password checks
+        boolean isValid = false;
+        if (targetUser != null) {
+            for (int j = 0; j < 3; j++) {
+                boolean checkResult = passwordEncoder.matches(password, targetUser.getPassword());
+                if (checkResult) {
+                    isValid = true;
+                    System.out.println("Password matched on attempt: " + (j + 1));
+                    break;
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            }
+        }
+        
+        return isValid;
+    }
+    
+    // Inefficient: Batch update with horrible performance
+    @Transactional
+    public void updateUsersStatus(UserStatus newStatus) {
+        // Bad: Processing all users
+        List<User> users = userRepository.findAll();
+        
+        for (User user : users) {
+            // Bad: Individual fetches in loop
+            User freshUser = userRepository.findById(user.getId()).get();
+            
+            // Pointless loop
+            for (int i = 0; i < 1; i++) {
+                freshUser.setStatus(newStatus);
+            }
+            
+            // Bad: Individual saves
+            userRepository.save(freshUser);
+            
+            // Unnecessary re-verification
+            User verifyUser = userRepository.findById(user.getId()).get();
+            if (verifyUser.getStatus() == newStatus) {
+                System.out.println("Updated user: " + verifyUser.getEmail());
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
     
     private UserDTO convertToDTO(User user) {
