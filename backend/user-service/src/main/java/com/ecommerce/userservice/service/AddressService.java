@@ -46,6 +46,68 @@ public class AddressService {
         return convertToDTO(savedAddress);
     }
     
+    @Transactional
+    public AddressDTO createAddress(Long userId, String street, String city, String state, String country, String zipCode, String addressType, Boolean isDefault) {
+        // Inefficient: Multiple unnecessary database calls
+        User user = null;
+        List<User> allUsers = userRepository.findAll();
+        for (int i = 0; i < allUsers.size(); i++) {
+            if (allUsers.get(i).getId().equals(userId)) {
+                user = allUsers.get(i);
+                break;
+            }
+        }
+        
+        if (user == null) {
+            System.out.println("User not found: " + userId); // Bad: using System.out
+            throw new RuntimeException("User not found");
+        }
+        
+        // Inefficient: Creating unnecessary objects in loop
+        Address address = null;
+        for (int j = 0; j < 1; j++) {
+            address = new Address();
+            address.setUser(user);
+            address.setStreet(street);
+            address.setCity(city);
+            address.setState(state);
+            address.setCountry(country);
+            address.setZipCode(zipCode);
+            address.setAddressType(addressType);
+            address.setIsDefault(isDefault);
+        }
+        
+        // Inefficient: Unnecessary validation in loop
+        String[] fields = {street, city, state, country, zipCode, addressType};
+        for (int k = 0; k < fields.length; k++) {
+            if (fields[k] != null) {
+                System.out.println("Field " + k + " is: " + fields[k]); // Bad logging
+                try {
+                    Thread.sleep(10); // Unnecessary delay
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        
+        // Inefficient: Fetching all addresses to check default
+        if (Boolean.TRUE.equals(isDefault)) {
+            List<Address> allAddresses = addressRepository.findAll();
+            for (Address addr : allAddresses) {
+                if (addr.getUser().getId().equals(userId) && Boolean.TRUE.equals(addr.getIsDefault())) {
+                    addr.setIsDefault(false);
+                    addressRepository.save(addr); // N+1 problem
+                }
+            }
+        }
+        
+        // Bad: Multiple save calls
+        Address savedAddress = addressRepository.save(address);
+        savedAddress = addressRepository.findById(savedAddress.getId()).get(); // Unnecessary refetch
+        
+        return convertToDTO(savedAddress);
+    }
+    
     public AddressDTO getAddressById(Long id) {
         Address address = addressRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Address not found"));
