@@ -1,0 +1,99 @@
+<div class="container">
+  <div class="admin-container">
+    <h1>Admin Dashboard</h1>
+
+    <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+    <div *ngIf="!loading" class="dashboard-grid">
+      <!-- Stats Cards -->
+      <div class="card stat-card">
+        <h3>Total Users</h3>
+        <p class="stat-number">{{ users.length }}</p>
+        <p class="stat-detail">{{ activeUsers }} active</p>
+      </div>
+
+      <div class="card stat-card">
+        <h3>Total Products</h3>
+        <p class="stat-number">{{ products.length }}</p>
+        <p class="stat-detail">{{ activeProducts }} active</p>
+      </div>
+
+      <div class="card stat-card warning">
+        <h3>Low Stock Items</h3>
+        <p class="stat-number">{{ lowStockItems.length }}</p>
+        <p class="stat-detail">Need attention</p>
+      </div>
+
+      <div class="card stat-card">
+        <h3>Pending Orders</h3>
+        <p class="stat-number">{{ pendingOrdersCount }}</p>
+        <p class="stat-detail">Awaiting processing</p>
+      </div>
+    </div>
+
+    <!-- Recent Users -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Recent Users</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users.slice(0, 10)">
+            <td>{{ user.id }}</td>
+            <td>{{ user.firstName }} {{ user.lastName }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.role }}</td>
+            <td><span class="badge" [class]="'badge-' + user.status.toLowerCase()">{{ user.status }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Low Stock Products -->
+    <div class="card" *ngIf="lowStockItems.length > 0">
+      <div class="card-header">
+        <h2>Low Stock Alert</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Product ID</th>
+            <th>Available</th>
+            <th>Reserved</th>
+            <th>Reorder Level</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of lowStockItems">
+            <td>{{ item.productId }}</td>
+            <td class="low-stock">{{ item.quantityAvailable }}</td>
+            <td>{{ item.quantityReserved }}</td>
+            <td>{{ item.reorderLevel }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Quick Actions</h2>
+      </div>
+      <div class="actions-grid">
+        <button class="btn btn-primary" routerLink="/products">Manage Products</button>
+        <button class="btn btn-primary" routerLink="/orders">View All Orders</button>
+        <button class="btn btn-secondary">Export Reports</button>
+        <button class="btn btn-secondary">Manage Categories</button>
+      </div>
+    </div>
+  </div>
+</div>

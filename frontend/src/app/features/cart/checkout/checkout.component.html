@@ -1,0 +1,99 @@
+<div class="container">
+  <div class="checkout-container">
+    <h1>Checkout</h1>
+
+    <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+
+    <div class="checkout-content">
+      <div class="checkout-form">
+        <form [formGroup]="checkoutForm" (ngSubmit)="placeOrder()">
+          <div class="card">
+            <div class="card-header">
+              <h2>Shipping Information</h2>
+            </div>
+
+            <div class="form-group">
+              <label>Shipping Address</label>
+              <select formControlName="shippingAddress" class="form-control">
+                <option *ngFor="let address of addresses" [value]="formatAddress(address)">
+                  {{ formatAddress(address) }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>Billing Information</h2>
+            </div>
+
+            <div class="form-group">
+              <label>Billing Address</label>
+              <select formControlName="billingAddress" class="form-control">
+                <option *ngFor="let address of addresses" [value]="formatAddress(address)">
+                  {{ formatAddress(address) }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>Payment Method</h2>
+            </div>
+
+            <div class="form-group">
+              <label>Select Payment Method</label>
+              <select formControlName="paymentMethod" class="form-control">
+                <option *ngFor="let method of paymentMethods" [value]="method">
+                  {{ method.replace('_', ' ') }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="order-summary card">
+        <div class="card-header">
+          <h2>Order Summary</h2>
+        </div>
+
+        <div class="summary-items">
+          <div *ngFor="let item of cart.items" class="summary-item">
+            <span>{{ item.productName }} x {{ item.quantity }}</span>
+            <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <div class="summary-row">
+          <span>Subtotal:</span>
+          <span>${{ cart.totalAmount.toFixed(2) }}</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Shipping:</span>
+          <span>${{ shippingAmount.toFixed(2) }}</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Tax:</span>
+          <span>${{ taxAmount.toFixed(2) }}</span>
+        </div>
+
+        <div class="summary-row total">
+          <span>Total:</span>
+          <span>${{ totalAmount.toFixed(2) }}</span>
+        </div>
+
+        <button 
+          class="btn btn-primary btn-block" 
+          (click)="placeOrder()"
+          [disabled]="loading || checkoutForm.invalid"
+        >
+          {{ loading ? 'Processing...' : 'Place Order' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

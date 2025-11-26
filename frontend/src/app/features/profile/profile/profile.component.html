@@ -1,0 +1,142 @@
+<div class="container">
+  <div class="profile-container">
+    <h1>My Profile</h1>
+
+    <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+    <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+
+    <!-- Profile Information -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Profile Information</h2>
+      </div>
+
+      <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" formControlName="firstName" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" formControlName="lastName" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" formControlName="email" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label for="phoneNumber">Phone Number</label>
+          <input type="tel" id="phoneNumber" formControlName="phoneNumber" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="loading || profileForm.invalid">
+          {{ loading ? 'Updating...' : 'Update Profile' }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Addresses -->
+    <div class="card">
+      <div class="card-header">
+        <h2>My Addresses</h2>
+        <button class="btn btn-primary" (click)="showAddressForm = !showAddressForm">
+          {{ showAddressForm ? 'Cancel' : 'Add New Address' }}
+        </button>
+      </div>
+
+      <div *ngIf="showAddressForm" class="address-form">
+        <form [formGroup]="addressForm" (ngSubmit)="addAddress()">
+          <div class="form-group">
+            <label for="addressLine1">Address Line 1</label>
+            <input type="text" id="addressLine1" formControlName="addressLine1" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label for="addressLine2">Address Line 2</label>
+            <input type="text" id="addressLine2" formControlName="addressLine2" class="form-control" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="city">City</label>
+              <input type="text" id="city" formControlName="city" class="form-control" />
+            </div>
+
+            <div class="form-group">
+              <label for="state">State</label>
+              <input type="text" id="state" formControlName="state" class="form-control" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="postalCode">Postal Code</label>
+              <input type="text" id="postalCode" formControlName="postalCode" class="form-control" />
+            </div>
+
+            <div class="form-group">
+              <label for="country">Country</label>
+              <input type="text" id="country" formControlName="country" class="form-control" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="addressType">Address Type</label>
+              <select id="addressType" formControlName="addressType" class="form-control">
+                <option *ngFor="let type of addressTypes" [value]="type">{{ type }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <input type="checkbox" formControlName="isDefault" />
+                Set as default address
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" [disabled]="addressForm.invalid">
+            Add Address
+          </button>
+        </form>
+      </div>
+
+      <div class="addresses-list">
+        <div *ngFor="let address of addresses" class="address-item">
+          <div class="address-content">
+            <div class="address-type">
+              {{ address.addressType }}
+              <span *ngIf="address.isDefault" class="badge-default">Default</span>
+            </div>
+            <p>{{ address.addressLine1 }}</p>
+            <p *ngIf="address.addressLine2">{{ address.addressLine2 }}</p>
+            <p>{{ address.city }}, {{ address.state }} {{ address.postalCode }}</p>
+            <p>{{ address.country }}</p>
+          </div>
+          <div class="address-actions">
+            <button 
+              *ngIf="!address.isDefault" 
+              class="btn btn-secondary btn-sm" 
+              (click)="setDefaultAddress(address.id)"
+            >
+              Set as Default
+            </button>
+            <button class="btn btn-danger btn-sm" (click)="deleteAddress(address.id)">
+              Delete
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="addresses.length === 0 && !showAddressForm" class="no-addresses">
+          <p>No addresses added yet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
