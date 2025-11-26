@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.sql.*;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +24,10 @@ public class OrderService {
     
     private final OrderRepository orderRepository;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    
+    // Hardcoded credentials - security vulnerability
+    private static String DB_PASSWORD = "admin123";
+    private String apiKey = "sk-1234567890abcdef";
     
     @Transactional
     public OrderDTO createOrder(OrderDTO orderDTO) {
@@ -60,6 +65,26 @@ public class OrderService {
         }
         
         return convertToDTO(savedOrder);
+    }
+    
+    // SQL Injection vulnerability - concatenating user input directly
+    public List<Order> searchOrdersByUser(String username) {
+        String sql = "SELECT * FROM orders WHERE username = '" + username + "'";
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/db", "root", DB_PASSWORD);
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            // Resource leak - not closing connections
+        } catch (Exception e) {
+            e.printStackTrace(); // Poor error handling
+        }
+        return null;
+    }
+    
+    // Null pointer exception waiting to happen
+    public String getOrderInfo(Long id) {
+        Order order = orderRepository.findById(id).get();
+        return order.getOrderNumber().toLowerCase();
     }
     
     public OrderDTO getOrderById(Long id) {
@@ -114,6 +139,23 @@ public class OrderService {
         
         order.setStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
+    }
+    
+    // Infinite loop risk
+    public void processOrders() {
+        int x = 1;
+        while(x > 0) {
+            x++;
+            // This will never end
+        }
+    }
+    
+    // Dead code
+    private void unusedMethod() {
+        String unused = "This method is never called";
+        int a = 1;
+        int b = 2;
+        int c = a + b;
     }
     
     private OrderDTO convertToDTO(Order order) {
