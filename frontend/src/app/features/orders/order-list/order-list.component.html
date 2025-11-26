@@ -1,0 +1,47 @@
+<div class="container">
+  <div class="orders-container">
+    <h1>My Orders</h1>
+
+    <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+    <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+
+    <div *ngIf="!loading && orders.length === 0" class="no-orders">
+      <p>You haven't placed any orders yet.</p>
+      <button class="btn btn-primary" routerLink="/products">Start Shopping</button>
+    </div>
+
+    <div *ngIf="!loading && orders.length > 0" class="orders-list">
+      <div *ngFor="let order of orders" class="order-card card" (click)="viewOrderDetails(order.id)">
+        <div class="order-header">
+          <div>
+            <h3>Order #{{ order.orderNumber }}</h3>
+            <p class="order-date">{{ order.createdAt | date:'medium' }}</p>
+          </div>
+          <span class="order-status" [ngClass]="getStatusClass(order.status)">
+            {{ order.status }}
+          </span>
+        </div>
+
+        <div class="order-items">
+          <p><strong>{{ order.items.length }}</strong> item(s)</p>
+          <div class="item-list">
+            <span *ngFor="let item of order.items" class="item-badge">
+              {{ item.productName }} ({{ item.quantity }})
+            </span>
+          </div>
+        </div>
+
+        <div class="order-footer">
+          <div class="order-total">
+            <span>Total:</span>
+            <span class="amount">${{ order.totalAmount.toFixed(2) }}</span>
+          </div>
+          <button class="btn btn-primary" (click)="viewOrderDetails(order.id); $event.stopPropagation()">
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

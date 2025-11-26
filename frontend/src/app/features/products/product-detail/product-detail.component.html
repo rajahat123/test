@@ -1,0 +1,112 @@
+<div class="container">
+  <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+  <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+
+  <div *ngIf="!loading && product" class="product-detail">
+    <div class="product-images">
+      <img [src]="product.imageUrl || 'assets/placeholder.png'" [alt]="product.name" />
+    </div>
+
+    <div class="product-details">
+      <h1>{{ product.name }}</h1>
+      <p class="brand">Brand: {{ product.brand }}</p>
+      <p class="sku">SKU: {{ product.sku }}</p>
+      
+      <div class="rating">
+        <span>⭐ {{ averageRating.toFixed(1) }}</span>
+        <span>({{ reviews.length }} reviews)</span>
+      </div>
+
+      <p class="price">${{ product.price.toFixed(2) }}</p>
+
+      <div *ngIf="inventory" class="inventory-info">
+        <p [class.low-stock]="inventory.quantityAvailable < 10">
+          <strong>Stock:</strong> {{ inventory.quantityAvailable }} units available
+        </p>
+      </div>
+
+      <p class="description">{{ product.description }}</p>
+
+      <div class="purchase-section">
+        <div class="quantity-selector">
+          <label>Quantity:</label>
+          <input 
+            type="number" 
+            [(ngModel)]="quantity" 
+            min="1" 
+            [max]="inventory?.quantityAvailable || 999"
+            class="form-control"
+          />
+        </div>
+
+        <button 
+          class="btn btn-primary btn-lg" 
+          (click)="addToCart()"
+          [disabled]="product.status !== 'ACTIVE' || (inventory && inventory.quantityAvailable < 1)"
+        >
+          Add to Cart
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && product" class="reviews-section">
+    <div class="card">
+      <div class="card-header">
+        <h2>Customer Reviews</h2>
+        <button 
+          *ngIf="isLoggedIn() && !showReviewForm" 
+          class="btn btn-primary" 
+          (click)="showReviewForm = true"
+        >
+          Write a Review
+        </button>
+      </div>
+
+      <div *ngIf="showReviewForm" class="review-form">
+        <h3>Write Your Review</h3>
+        <div class="form-group">
+          <label>Rating</label>
+          <select [(ngModel)]="newReview.rating" class="form-control">
+            <option [value]="5">⭐⭐⭐⭐⭐ (5)</option>
+            <option [value]="4">⭐⭐⭐⭐ (4)</option>
+            <option [value]="3">⭐⭐⭐ (3)</option>
+            <option [value]="2">⭐⭐ (2)</option>
+            <option [value]="1">⭐ (1)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Comment</label>
+          <textarea 
+            [(ngModel)]="newReview.comment" 
+            class="form-control" 
+            rows="4"
+            placeholder="Share your experience with this product..."
+          ></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" (click)="submitReview()">Submit Review</button>
+          <button class="btn btn-secondary" (click)="showReviewForm = false">Cancel</button>
+        </div>
+      </div>
+
+      <div class="reviews-list">
+        <div *ngFor="let review of reviews" class="review-item">
+          <div class="review-header">
+            <span class="rating">{{ '⭐'.repeat(review.rating) }}</span>
+            <span class="date">{{ review.createdAt | date }}</span>
+          </div>
+          <p class="review-comment">{{ review.comment }}</p>
+          <p class="reviewer">- {{ review.userName }}</p>
+        </div>
+
+        <div *ngIf="reviews.length === 0" class="no-reviews">
+          <p>No reviews yet. Be the first to review this product!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

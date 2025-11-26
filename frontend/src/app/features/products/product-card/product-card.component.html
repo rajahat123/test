@@ -1,0 +1,22 @@
+<div class="product-card" (click)="viewDetails()">
+  <div class="product-image">
+    <img [src]="product.imageUrl || 'assets/placeholder.png'" [alt]="product.name" />
+    <span class="product-status" [class]="product.status.toLowerCase()">
+      {{ product.status }}
+    </span>
+  </div>
+
+  <div class="product-info">
+    <h3 class="product-name">{{ product.name }}</h3>
+    <p class="product-brand">{{ product.brand }}</p>
+    <p class="product-price">${{ product.price.toFixed(2) }}</p>
+    
+    <button 
+      class="btn btn-primary btn-block" 
+      (click)="addToCart(); $event.stopPropagation()"
+      [disabled]="product.status !== 'ACTIVE'"
+    >
+      Add to Cart
+    </button>
+  </div>
+</div>

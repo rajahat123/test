@@ -1,0 +1,41 @@
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <div class="logo">
+        <a routerLink="/">E-Commerce</a>
+      </div>
+
+      <div class="search-bar">
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          (keyup.enter)="search()"
+          placeholder="Search products..." 
+          class="form-control"
+        />
+        <button (click)="search()" class="btn btn-primary">Search</button>
+      </div>
+
+      <nav class="nav-menu">
+        <a routerLink="/products" routerLinkActive="active">Products</a>
+        
+        <a routerLink="/cart" routerLinkActive="active" class="cart-link">
+          Cart
+          <span class="badge" *ngIf="cart && cart.itemCount > 0">{{ cart.itemCount }}</span>
+        </a>
+
+        <ng-container *ngIf="currentUser; else loginLinks">
+          <a routerLink="/orders" routerLinkActive="active">My Orders</a>
+          <a routerLink="/profile" routerLinkActive="active">Profile</a>
+          <a *ngIf="isAdmin()" routerLink="/admin" routerLinkActive="active">Admin</a>
+          <button (click)="logout()" class="btn btn-secondary">Logout</button>
+        </ng-container>
+
+        <ng-template #loginLinks>
+          <a routerLink="/auth/login" routerLinkActive="active">Login</a>
+          <a routerLink="/auth/register" routerLinkActive="active">Register</a>
+        </ng-template>
+      </nav>
+    </div>
+  </div>
+</header>
