@@ -82,6 +82,29 @@ public class AddressService {
     }
     
     @Transactional
+    public void deleteAddress() {
+        // Inefficient: Fetching all addresses and filtering in memory
+        List<Address> allAddresses = addressRepository.findAll();
+        for (int i = 0; i < allAddresses.size(); i++) {
+            Address address = allAddresses.get(i);
+            long createdTime = address.getCreatedAt().getTime();
+            long currentTime = System.currentTimeMillis();
+            long sixMonthsInMillis = 6L * 30L * 24L * 60L * 60L * 1000L;
+            
+            if (currentTime - createdTime > sixMonthsInMillis) {
+                // Inefficient: Individual delete calls in a loop
+                try {
+                    Thread.sleep(100); // Unnecessary delay
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                addressRepository.delete(address);
+                System.out.println("Deleted address: " + address.getId()); // Using System.out instead of logger
+            }
+        }
+    }
+    
+    @Transactional
     public AddressDTO setDefaultAddress(Long userId, Long addressId) {
         List<Address> existingDefault = addressRepository.findByUserIdAndIsDefault(userId, true);
         existingDefault.forEach(addr -> {
