@@ -67,6 +67,17 @@ public class InventoryService {
             .collect(Collectors.toList());
     }
     
+    // Additional SQL Injection with user input - CRITICAL SECURITY ISSUE
+    public List<InventoryDTO> findByLocation(String location) {
+        String sql = "SELECT * FROM inventory WHERE warehouse_location = '" + location + "'";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            InventoryDTO dto = new InventoryDTO();
+            dto.setId(rs.getLong("id"));
+            dto.setWarehouseLocation(rs.getString("warehouse_location"));
+            return dto;
+        });
+    }
+    
     public List<InventoryDTO> getLowStockItems() {
         return inventoryRepository.findLowStockItems().stream()
             .map(this::convertToDTO)
@@ -150,6 +161,17 @@ public class InventoryService {
         });
     }
     
+    // More SQL Injection patterns
+    public int deleteInventoryByQuery(String condition) {
+        String deleteQuery = "DELETE FROM inventory WHERE " + condition;
+        return jdbcTemplate.update(deleteQuery);
+    }
+    
+    public void updateInventoryDynamic(String field, String value, Long id) {
+        String updateSql = "UPDATE inventory SET " + field + " = '" + value + "' WHERE id = " + id;
+        jdbcTemplate.execute(updateSql);
+    }
+    
     // Command Injection vulnerability - SECURITY ISSUE
     public String executeSystemCommand(String filename) {
         try {
@@ -159,6 +181,19 @@ public class InventoryService {
         } catch (IOException e) {
             return "Error: " + e.getMessage();
         }
+    }
+    
+    // More Command Injection patterns
+    public String backupInventory(String backupPath) throws IOException {
+        String cmd = "cp /var/inventory/data.db " + backupPath;
+        Runtime.getRuntime().exec(cmd);
+        return "Backup created at: " + backupPath;
+    }
+    
+    public String exportInventory(String format) throws IOException {
+        String[] command = {"/bin/sh", "-c", "export_tool --format=" + format};
+        Runtime.getRuntime().exec(command);
+        return "Export completed";
     }
     
     // Path Traversal vulnerability - SECURITY ISSUE
