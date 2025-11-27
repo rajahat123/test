@@ -79,4 +79,69 @@ public class InventoryController {
         inventoryService.deductStock(productId, quantity);
         return ResponseEntity.noContent().build();
     }
+    
+    // VULNERABLE ENDPOINTS - SQL Injection
+    @GetMapping("/search")
+    public ResponseEntity<List<InventoryDTO>> searchInventory(@RequestParam String sku) {
+        List<InventoryDTO> results = inventoryService.searchInventoryUnsafe(sku);
+        return ResponseEntity.ok(results);
+    }
+    
+    @GetMapping("/location")
+    public ResponseEntity<List<InventoryDTO>> findByLocation(@RequestParam String location) {
+        List<InventoryDTO> results = inventoryService.findByLocation(location);
+        return ResponseEntity.ok(results);
+    }
+    
+    @DeleteMapping("/query")
+    public ResponseEntity<Integer> deleteByQuery(@RequestParam String condition) {
+        int deleted = inventoryService.deleteInventoryByQuery(condition);
+        return ResponseEntity.ok(deleted);
+    }
+    
+    // VULNERABLE ENDPOINT - Command Injection
+    @GetMapping("/export")
+    public ResponseEntity<String> exportData(@RequestParam String format) throws Exception {
+        String result = inventoryService.exportInventory(format);
+        return ResponseEntity.ok(result);
+    }
+    
+    @PostMapping("/backup")
+    public ResponseEntity<String> backupData(@RequestParam String path) throws Exception {
+        String result = inventoryService.backupInventory(path);
+        return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/command")
+    public ResponseEntity<String> executeCommand(@RequestParam String file) {
+        String result = inventoryService.executeSystemCommand(file);
+        return ResponseEntity.ok(result);
+    }
+    
+    // VULNERABLE ENDPOINT - Path Traversal
+    @GetMapping("/file")
+    public ResponseEntity<String> readFile(@RequestParam String filename) {
+        String content = inventoryService.readInventoryFile(filename);
+        return ResponseEntity.ok(content);
+    }
+    
+    // VULNERABLE ENDPOINT - Information Disclosure
+    @GetMapping("/system-info")
+    public ResponseEntity<String> getSystemInfo() {
+        String info = inventoryService.getSystemInfo();
+        return ResponseEntity.ok(info);
+    }
+    
+    // VULNERABLE ENDPOINT - Insecure Random
+    @GetMapping("/generate-token")
+    public ResponseEntity<String> generateToken() {
+        String token = inventoryService.generateToken();
+        return ResponseEntity.ok(token);
+    }
+    
+    // VULNERABLE ENDPOINT - Open Redirect
+    @GetMapping("/redirect")
+    public String redirect(@RequestParam String url) {
+        return inventoryService.redirectToUrl(url);
+    }
 }

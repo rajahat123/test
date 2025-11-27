@@ -1,0 +1,11 @@
+name: "Security and Quality Queries"
+
+disable-default-queries: false
+
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
+
+query-filters:
+  - exclude:
+      id: java/todo-comment
